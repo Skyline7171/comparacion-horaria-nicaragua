@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-supabase-bg: #0c0c0c;
+  --color-supabase-surface: #18181b;
+  --color-supabase-border: #2e2e33;
+  --color-supabase-green: #3ecf8e;
+  --color-supabase-text-muted: #8b8b93;
+}
+
+body {
+  background-color: var(--color-supabase-bg);
+  color: #ededed;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
+}
