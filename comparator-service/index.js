@@ -92,17 +92,19 @@ app.get('/api/nicaragua', async (req, res) => {
 
 // Comparar país seleccionado con Nicaragua
 app.post('/api/compare', async (req, res) => {
-    const { countryName } = req.body;
+    // Recibimos tanto el nombre como el código ISO desde React
+    const { countryName, countryCode } = req.body;
 
-    // Validación estricta de entrada para evitar inyecciones o datos basura
-    if (!countryName || typeof countryName !== 'string' || countryName.trim().length === 0) {
-        return res.status(400).json({ error: 'El nombre del país es obligatorio y debe ser un texto válido.' });
+    // Validación estricta de entrada
+    if (!countryName || !countryCode) {
+        return res.status(400).json({ error: 'El nombre y el código del país son requeridos.' });
     }
 
     try {
-        // Peticiones en paralelo para optimizar tiempo de respuesta
         const urlNicaragua = `https://api.openweathermap.org/data/2.5/weather?q=Managua,NI&units=metric&appid=${API_KEY}`;
-        const urlDestino = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(countryName)}&units=metric&lang=es&appid=${API_KEY}`;
+        
+        // Añadimos el código ISO a la query separados por coma
+        const urlDestino = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(countryName)},${countryCode.toLowerCase()}&units=metric&lang=es&appid=${API_KEY}`;
 
         const [resNi, resDestino] = await Promise.all([fetch(urlNicaragua), fetch(urlDestino)]);
 
@@ -131,15 +133,12 @@ app.post('/api/compare', async (req, res) => {
             throw new Error('Error al consultar el servicio del clima externo');
         }
 
-        // Si el destino sí tuvo éxito, parseamos sus datos con normalidad
         const dataDestino = await resDestino.json();
 
-        // Cálculos lógicos y matemáticos
         const horaPais = obtenerHoraPorOffset(dataDestino.timezone);
         const horaNicaragua = obtenerHoraPorOffset(dataNi.timezone);
         const comparacionHoraria = calcularDiferencia(dataDestino.timezone, dataNi.timezone);
 
-        // Respuesta consolidada con éxito completo (Status 200)
         res.json({
             paisSeleccionado: {
                 nombre: countryName,

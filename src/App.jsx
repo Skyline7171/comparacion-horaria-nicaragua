@@ -5,7 +5,7 @@ import TimeDifference from './components/TimeDifference';
 
 export default function App() {
   const [countries, setCountries] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedCountryCode, setSelectedCountryCode] = useState('');
   const [loadingCountries, setLoadingCountries] = useState(true);
   
   const [comparisonData, setComparisonData] = useState(null);
@@ -35,51 +35,53 @@ export default function App() {
   }, []);
 
   const handleCountryChange = async (e) => {
-    const countryName = e.target.value;
-    setSelectedCountry(countryName);
-    if (!countryName) {
-      setComparisonData(null);
-      return;
-    }
+  const countryCode = e.target.value;
+  setSelectedCountryCode(countryCode);
+  
+  if (!countryCode) {
+    setComparisonData(null);
+    return;
+  }
 
-    setLoadingCompare(true);
-    setError(null);
+  // Buscamos el objeto país correspondiente en nuestra lista
+  const targetCountry = countries.find(c => c.code === countryCode);
+  if (!targetCountry) return;
 
-    try {
-      const response = await fetch(`${COMPARATOR_SVC_URL}/compare`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ countryName })
-      });
+  setLoadingCompare(true);
+  setError(null);
 
-      // Si el backend responde con un error controlado
-      if (!response.ok) {
-        const errorData = await response.json();
-        
-        // Si el backend nos mandó la estructura de fallback, la usamos en lugar de romper la app
-        if (errorData.paisSeleccionado) {
-          setComparisonData(errorData);
-          setNicaraguaData(errorData.nicaragua);
-          return; // Salimos de la función limpiamente sin disparar el catch
-        }
-        
-        // Si es un error crítico real (ej. un 500), entonces sí lanzamos el error
-        throw new Error(errorData.error || 'Error al realizar la comparación');
+  try {
+    const response = await fetch(`${COMPARATOR_SVC_URL}/compare`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // Enviamos ambos datos al backend
+      body: JSON.stringify({ 
+        countryName: targetCountry.name, 
+        countryCode: targetCountry.code 
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      if (errorData.paisSeleccionado) {
+        setComparisonData(errorData);
+        setNicaraguaData(errorData.nicaragua);
+        return;
       }
-
-      // Si todo salió bien (status 200)
-      const data = await response.json();
-      setComparisonData(data);
-      setNicaraguaData(data.nicaragua);
-
-    } catch (err) {
-      // Este bloque solo se ejecutará si el backend está totalmente caído (Error 500 o de red)
-      setError(err.message);
-      setComparisonData(null);
-    } finally {
-      setLoadingCompare(false);
+      throw new Error(errorData.error || 'Error al realizar la comparación');
     }
-  };
+
+    const data = await response.json();
+    setComparisonData(data);
+    setNicaraguaData(data.nicaragua);
+
+  } catch (err) {
+    setError(err.message);
+    setComparisonData(null);
+  } finally {
+    setLoadingCompare(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-supabase-bg text-neutral-100 flex flex-col items-center p-6">
@@ -95,7 +97,7 @@ export default function App() {
         
         <CountrySelector 
           countries={countries} 
-          selectedCountry={selectedCountry} 
+          selectedCountryCode={selectedCountryCode} 
           onCountryChange={handleCountryChange} 
           loading={loadingCountries} 
         />
@@ -122,12 +124,12 @@ export default function App() {
 
           <WeatherCard 
             title="Destino"
-            countryName={selectedCountry}
-            // Buscamos en el array de países el objeto que coincida con el nombre seleccionado para extraer su flag SVG
-            flag={countries.find(c => c.name === selectedCountry)?.flag}
+            // Usa el nombre real del país desde los datos procesados del backend o del objeto local
+            countryName={countries.find(c => c.code === selectedCountryCode)?.nameEs || selectedCountryCode}
+            flag={countries.find(c => c.code === selectedCountryCode)?.flag}
             weather={comparisonData?.paisSeleccionado?.clima}
             time={comparisonData?.paisSeleccionado?.hora}
-            temperature={comparisonData?.paisSeleccionado?.temperatura}
+            temperature={comparisonData?.paisSeleccionado?.temperature || comparisonData?.paisSeleccionado?.temperatura}
             isReference={false}
             loading={loadingCompare}
           />
