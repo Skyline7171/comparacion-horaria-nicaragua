@@ -54,10 +54,11 @@ export default function App() {
     const response = await fetch(`${COMPARATOR_SVC_URL}/compare`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // Enviamos ambos datos al backend
+
       body: JSON.stringify({ 
         countryName: targetCountry.name, 
-        countryCode: targetCountry.code 
+        countryCode: targetCountry.code,
+        capital: targetCountry.capital
       })
     });
 

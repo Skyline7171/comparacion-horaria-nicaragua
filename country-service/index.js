@@ -61,25 +61,30 @@ app.get('/api/countries', async (req, res) => {
                 // Extraemos el código de dos letras. Si viene vacío, usamos el parent o una alternativa segura
                 const code = country.codes?.alpha_2 || country.parent?.alpha_2 || "";
                 
-                // GUARDAMOS EL NOMBRE EN INGLÉS PARA LA API DEL CLIMA (ej: "New Zealand")
+                // Guardamos el nombre en inglés para la API del clima
                 const nameEn = country.names?.common || "Unknown";
                 
-                // GUARDAMOS EL NOMBRE EN ESPAÑOL PARA LA INTERFAZ DE REACT (Tu variable 'name' original)
+                // Guardamos el nombre en español para la interfaz de React
                 const nameEs = country.names?.translations?.spa?.common || country.names?.common || "Desconocido";
                 
-                // Usamos la URL oficial de la bandera que provee la API, si viene vacía usamos flagcdn como respaldo
+                // Usamos la URL oficial de la bandera
                 const flag = country.flag?.url_svg || country.flag?.url_png || `https://flagcdn.com/${code.toLowerCase()}.svg`;
+
+                // 'capitals' es un array de objetos. Accedemos al primero y extraemos '.name'
+                let capital = "Unknown";
+                if (country.capitals && country.capitals.length > 0 && country.capitals[0].name) {
+                    capital = country.capitals[0].name;
+                }
 
                 return {
                     code: code,
-                    name: nameEn,  // Ahora viaja el nombre en inglés en el campo base 'name'
-                    nameEs: nameEs, // Añadimos la traducción explícita para el selector
+                    name: nameEn,  
+                    nameEs: nameEs, 
+                    capital: capital,
                     flag: flag
                 };
             })
-            // Modificamos el filtro para usar el nombre en español que usará el usuario
             .filter(c => c.nameEs !== "Desconocido")
-            // Ordenamos alfabéticamente de la A a la Z basándonos en los nombres en español
             .sort((a, b) => a.nameEs.localeCompare(b.nameEs));
 
         res.json(cleanCountries);

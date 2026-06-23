@@ -48,20 +48,33 @@ function obtenerHoraPorOffset(offsetSegundos) {
 // Función para calcular la diferencia horaria exacta
 function calcularDiferencia(offsetPais, offsetNicaragua) {
     const diferenciaSegundos = offsetPais - offsetNicaragua;
-    const diferenciaHoras = diferenciaSegundos / 3600;
+    const diferenciaHorasAbsolutas = Math.abs(diferenciaSegundos / 3600);
 
-    if (diferenciaHoras === 0) {
+    // Separamos las horas de los minutos de forma matemática
+    const horasEnteras = Math.floor(diferenciaHorasAbsolutas);
+    const minutosRestantes = Math.round((diferenciaHorasAbsolutas - horasEnteras) * 60);
+
+    let textoTiempo = "";
+    if (minutosRestantes > 0) {
+        const textoHoras = horasEnteras === 1 ? '1 hora' : `${horasEnteras} horas`;
+        const textoMinutos = minutosRestantes === 1 ? '1 minuto' : `${minutosRestantes} minutos`;
+        textoTiempo = `${textoHoras} y ${textoMinutos}`;
+    } else {
+        textoTiempo = horasEnteras === 1 ? '1 hora' : `${horasEnteras} horas`;
+    }
+
+    // Evaluamos la dirección del huso horario respecto a Nicaragua
+    if (diferenciaSegundos === 0) {
         return { horas: 0, mensaje: "Misma hora que Nicaragua" };
-    } else if (diferenciaHoras > 0) {
+    } else if (diferenciaSegundos > 0) {
         return { 
-            horas: diferenciaHoras, 
-            mensaje: `${diferenciaHoras} ${diferenciaHoras === 1 ? 'hora adelante' : 'horas adelante'}` 
+            horas: diferenciaSegundos / 3600, 
+            mensaje: `${textoTiempo} adelante` 
         };
     } else {
-        const horasAbsolutas = Math.abs(diferenciaHoras);
         return { 
-            horas: diferenciaHoras, 
-            mensaje: `${horasAbsolutas} ${horasAbsolutas === 1 ? 'hora atrás' : 'horas atrás'}` 
+            horas: diferenciaSegundos / 3600, 
+            mensaje: `${textoTiempo} atrás` 
         };
     }
 }
@@ -80,7 +93,7 @@ app.get('/api/nicaragua', async (req, res) => {
         res.json({
             pais: "Nicaragua",
             temperatura: `${Math.round(data.main.temp)}°C`,
-            clima: data.weather[0].description,
+            clima: `${data.weather[0].description} (Managua)`,
             hora: obtenerHoraPorOffset(data.timezone),
             offset: data.timezone
         });
@@ -92,19 +105,23 @@ app.get('/api/nicaragua', async (req, res) => {
 
 // Comparar país seleccionado con Nicaragua
 app.post('/api/compare', async (req, res) => {
-    // Recibimos tanto el nombre como el código ISO desde React
-    const { countryName, countryCode } = req.body;
 
-    // Validación estricta de entrada
+    const { countryName, countryCode, capital } = req.body;
+
     if (!countryName || !countryCode) {
         return res.status(400).json({ error: 'El nombre y el código del país son requeridos.' });
     }
 
     try {
-        const urlNicaragua = `https://api.openweathermap.org/data/2.5/weather?q=Managua,NI&units=metric&appid=${API_KEY}`;
+        const codigoLimpio = countryCode.toLowerCase();
         
-        // Añadimos el código ISO a la query separados por coma
-        const urlDestino = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(countryName)},${countryCode.toLowerCase()}&units=metric&lang=es&appid=${API_KEY}`;
+        // Si hay una capital válida, buscamos "{Capital},{ISO}". Si no, "{País_En},{ISO}"
+        const tieneCapitalValida = capital && capital !== 'Unknown' && capital.trim() !== '';
+        const terminoBusqueda = tieneCapitalValida ? capital : countryName;
+
+        const urlNicaragua = `https://api.openweathermap.org/data/2.5/weather?q=Managua,NI&units=metric&lang=es&appid=${API_KEY}`;
+        
+        const urlDestino = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(terminoBusqueda)},${codigoLimpio}&units=metric&lang=es&appid=${API_KEY}`;
 
         const [resNi, resDestino] = await Promise.all([fetch(urlNicaragua), fetch(urlDestino)]);
 
@@ -113,6 +130,7 @@ app.post('/api/compare', async (req, res) => {
         const dataNi = await resNi.json();
 
         if (!resDestino.ok) {
+            // Si incluso por la capital da 404 (ej. territorios ultra pequeños), se dispara nuestro catch defensivo
             if (resDestino.status === 404) {
                 return res.status(200).json({
                     paisSeleccionado: {
@@ -142,15 +160,16 @@ app.post('/api/compare', async (req, res) => {
         res.json({
             paisSeleccionado: {
                 nombre: countryName,
+                // Opcional: puedes concatenar la capital en el clima para que el usuario sepa de dónde viene el dato, ej: "Despejado (Seúl)"
                 temperatura: `${Math.round(dataDestino.main.temp)}°C`,
-                clima: dataDestino.weather[0].description,
+                clima: tieneCapitalValida ? `${dataDestino.weather[0].description} (${capital})` : dataDestino.weather[0].description,
                 hora: horaPais
             },
             nicaragua: {
                 nombre: "Nicaragua",
                 temperatura: `${Math.round(dataNi.main.temp)}°C`,
-                clima: dataNi.weather[0].description,
-                hora: horaNicaragua
+                clima: `${dataNi.weather[0].description} (Managua)`,
+                hora: obtenerHoraPorOffset(dataNi.timezone)
             },
             diferencia: comparacionHoraria.mensaje
         });
