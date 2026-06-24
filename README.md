@@ -1,16 +1,9 @@
-# React + Vite
+El proyecto fue diseñado bajo una arquitectura desacoplada de microservicios. Para el frontend, se desarrolló una interfaz SPA
+utilizando React.js, la cual se encuentra desplegada de forma estática en Netlify. Por otro lado, el backend está compuesto por
+microservicios independientes construidos sobre Node.js con el framework Express, alojados mediante Web Services en Render. 
+El sistema orquesta e integra dos APIs externas principales: REST Countries v5 para la sincronización y normalización de la data
+geopolítica de los países, y OpenWeatherMap para el consumo asíncrono de variables climáticas y husos horarios en tiempo real.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Nota: Existen regiones geográficas atípicas o zonas extremas (como la Antártida) de las cuales OpenWeatherMap no posee registros climáticos o estaciones meteorológicas activas. Este comportamiento representa una limitación directa del proveedor del servicio externo y es ajeno a la lógica de control del sistema.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Dado que la especificación de requerimientos del proyecto define el alcance únicamente a nivel de "país", se adoptó como criterio técnico estandarizar las consultas meteorológicas y horarias tomando como referencia la capital de cada nación. Esto mitiga ambigüedades geográficas en países con múltiples husos horarios o extensiones territoriales masivas.
