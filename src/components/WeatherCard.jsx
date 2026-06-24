@@ -20,7 +20,7 @@ export default function WeatherCard({ title, countryName, flag, weather, time, t
             {isReference ? 'Referencia Local' : 'Comparando'}
           </span>
           
-          {/* Renderizado de la bandera o el Icono SVG estilizado */}
+          {/* Renderizado de la bandera */}
           {flag ? (
             <img 
               src={flag} 

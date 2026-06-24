@@ -160,7 +160,6 @@ app.post('/api/compare', async (req, res) => {
         res.json({
             paisSeleccionado: {
                 nombre: countryName,
-                // Opcional: puedes concatenar la capital en el clima para que el usuario sepa de dónde viene el dato, ej: "Despejado (Seúl)"
                 temperatura: `${Math.round(dataDestino.main.temp)}°C`,
                 clima: tieneCapitalValida ? `${dataDestino.weather[0].description} (${capital})` : dataDestino.weather[0].description,
                 hora: horaPais

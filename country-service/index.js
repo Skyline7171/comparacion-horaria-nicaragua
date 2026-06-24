@@ -14,7 +14,7 @@ app.use(express.json());
 const whitelist = ['http://localhost:5173', 'https://mini-sistema-2.netlify.app'];
 const corsOptions = {
     origin: function (origin, callback) {
-        // Permitir peticiones sin origen (como Postman o curl para pruebas locales)
+        // Permitir peticiones sin origen (para pruebas locales)
         if (!origin || whitelist.indexOf(origin) !== -1) {
             callback(null, true);
         } else {

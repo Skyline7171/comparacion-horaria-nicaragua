@@ -8,14 +8,13 @@ export default function CountrySelector({ countries, selectedCountryCode, onCoun
       </label>
       
       <select
-        value={selectedCountryCode} // ◄ Ahora se controla mediante el código ISO
+        value={selectedCountryCode}
         onChange={onCountryChange}
         disabled={loading}
         className="w-full md:w-80 bg-supabase-bg border border-supabase-border rounded-lg px-4 py-2.5 text-sm text-neutral-200 focus:outline-none focus:border-supabase-green transition-colors cursor-pointer disabled:opacity-50"
       >
         <option value="">{loading ? 'Cargando países...' : 'Seleccione un país...'}</option>
         {countries.map((country) => (
-          // ◄ Guardamos el código ISO como valor único
           <option key={country.code} value={country.code}> 
             {country.nameEs}
           </option>

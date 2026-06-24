@@ -128,7 +128,6 @@ export default function App() {
 
           <WeatherCard 
             title="Destino"
-            // Usa el nombre real del país desde los datos procesados del backend o del objeto local
             countryName={countries.find(c => c.code === selectedCountryCode)?.nameEs || selectedCountryCode}
             flag={countries.find(c => c.code === selectedCountryCode)?.flag}
             weather={comparisonData?.paisSeleccionado?.clima}
