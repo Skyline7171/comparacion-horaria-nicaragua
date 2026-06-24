@@ -17,7 +17,7 @@ app.use(helmet());
 app.use(express.json());
 
 // Configuración de CORS con lista blanca (Seguridad Académica)
-const whitelist = ['http://localhost:5173'];
+const whitelist = ['http://localhost:5173', 'https://mini-sistema-2.netlify.app'];
 const corsOptions = {
     origin: function (origin, callback) {
         if (!origin || whitelist.indexOf(origin) !== -1) {

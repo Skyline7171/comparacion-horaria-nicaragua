@@ -3,6 +3,8 @@ import CountrySelector from './components/CountrySelector';
 import WeatherCard from './components/WeatherCard';
 import TimeDifference from './components/TimeDifference';
 
+import { AlertTriangle } from 'lucide-react';
+
 export default function App() {
   const [countries, setCountries] = useState([]);
   const [selectedCountryCode, setSelectedCountryCode] = useState('');
@@ -13,8 +15,8 @@ export default function App() {
   const [loadingCompare, setLoadingCompare] = useState(false);
   const [error, setError] = useState(null);
 
-  const COUNTRY_SVC_URL = 'http://localhost:5001/api/countries';
-  const COMPARATOR_SVC_URL = 'http://localhost:5002/api';
+  const COUNTRY_SVC_URL = import.meta.env.VITE_COUNTRY_SVC_URL || 'http://localhost:5001/api/countries';
+  const COMPARATOR_SVC_URL = import.meta.env.VITE_COMPARATOR_SVC_URL || 'http://localhost:5002/api';
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -104,8 +106,9 @@ export default function App() {
         />
 
         {error && (
-          <div className="p-3 bg-red-950/40 border border-red-800/60 rounded-lg text-sm text-red-400">
-            ⚠️ {error}
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 flex items-center gap-3 text-amber-400 text-sm">
+            <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 stroke-[2]" />
+            <span>{error}</span>
           </div>
         )}
 

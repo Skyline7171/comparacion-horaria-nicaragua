@@ -1,4 +1,5 @@
 import React from 'react';
+import { Globe } from 'lucide-react';
 
 export default function WeatherCard({ title, countryName, flag, weather, time, temperature, isReference, loading }) {
   return (
@@ -19,23 +20,22 @@ export default function WeatherCard({ title, countryName, flag, weather, time, t
             {isReference ? 'Referencia Local' : 'Comparando'}
           </span>
           
-          {/* Renderizado de la bandera dinámica en lugar de un emoji fijo */}
+          {/* Renderizado de la bandera o el Icono SVG estilizado */}
           {flag ? (
             <img 
               src={flag} 
               alt={`Bandera de ${countryName}`} 
               className="h-5 w-7 object-cover rounded shadow-md border border-supabase-border"
               onError={(e) => {
-                // Respaldo por si falla la URL de la bandera externa
                 e.target.src = "https://flagcdn.com/un.svg"; 
               }}
             />
           ) : (
-            <span className="text-xl">🌍</span>
+            <Globe className="h-5 w-5 text-supabase-text-muted stroke-[1.5]" />
           )}
         </div>
         <h2 className="text-2xl font-bold tracking-tight mb-1">{countryName || '---'}</h2>
-        <p className="text-sm text-supabase-text-muted capitalize">{weather || 'Cargando datos...'}</p>
+        <p className="text-sm text-supabase-text-muted capitalize">{weather || '---'}</p>
       </div>
       
       <div className="mt-12 flex justify-between items-baseline border-t border-supabase-border/50 pt-4">

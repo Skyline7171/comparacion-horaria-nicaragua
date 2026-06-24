@@ -11,7 +11,7 @@ app.use(helmet());
 app.use(express.json());
 
 // Configuración Estricta de CORS
-const whitelist = ['http://localhost:5173']; // Acórdate de agregar la URL de Render/Netlify en producción
+const whitelist = ['http://localhost:5173', 'https://mini-sistema-2.netlify.app'];
 const corsOptions = {
     origin: function (origin, callback) {
         // Permitir peticiones sin origen (como Postman o curl para pruebas locales)
